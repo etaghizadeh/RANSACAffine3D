@@ -12,6 +12,7 @@ end
 [movPoints, T_fix] = normalizeControlPoints(movPoints);
 [fixPoints, T_mov] = normalizeControlPoints(fixPoints);
 
+% check for devision to zero!
 if(sum(isnan(movPoints(:)) | movPoints(:)==inf ) ~= 0 || sum(isnan(fixPoints(:)) | fixPoints(:)==inf ) ~= 0)
     AffineT = eye(4);
     warning('Couldn''t find an affine transformation for the given points;');
@@ -36,5 +37,11 @@ H         = [h(1) h(2)  h(3)  h(4); ...
              h(5) h(6)  h(7)  h(8); ...
              h(9) h(10) h(11) h(12); ...
              0    0     0     1];
+% if the points are collinear!
+if(rank(H)<4)
+    AffineT = eye(4);
+    warning('Couldn''t find an affine transformation for the given points;');
+    return;
+end
 H         = T_mov'\H*T_fix';
 AffineT   = H';
