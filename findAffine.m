@@ -9,8 +9,8 @@ if (N<4)
     error('at least three points are necessary to find the affine transformation');
 end
 
-[movPoints, T_fix] = normalizeControlPoints(movPoints);
-[fixPoints, T_mov] = normalizeControlPoints(fixPoints);
+[movPoints, T_mov] = normalizeControlPoints(movPoints);
+[fixPoints, T_fix] = normalizeControlPoints(fixPoints);
 
 % check for devision to zero!
 if(sum(isnan(movPoints(:)) | movPoints(:)==inf ) ~= 0 || sum(isnan(fixPoints(:)) | fixPoints(:)==inf ) ~= 0)
@@ -43,5 +43,4 @@ if(rank(H)<4)
     warning('Couldn''t find an affine transformation for the given points;');
     return;
 end
-H         = T_mov'\H*T_fix';
-AffineT   = H';
+AffineT         = (T_fix'\H*T_move')';
