@@ -1,22 +1,46 @@
 function [normPoints, T] = normalizeControlPoints(points)
 % points: Nx3, while N: number of points and points are on 3 dimensional
 % space.
-center = mean(points);
+% center = mean(points);
+% center = (max(points)+min(points))/2;
+% normPoints = bsxfun(@minus, points, center);
+% 
+% 
+% dist = sqrt(sum(normPoints.^2,2));
+% scaleFactor = sqrt(2)/mean(dist);
+% 
+% translation = [1 0 0 -center(1); ...
+%                0 1 0 -center(2); ...
+%                0 0 1 -center(3); ...
+%                0 0 0 1];
+% scaling     = [scaleFactor 0           0           0; ...
+%                0           scaleFactor 0           0; ...
+%                0           0           scaleFactor 0; ...
+%                0           0           0           1];
+%            
+% T = (scaling * translation)';
+% normPoints = [points ones(size(points,1), 1)] * T;
+% normPoints = normPoints(:, 1:end-1);
+% 
+
+center = (max(points)+min(points))/2;
 normPoints = bsxfun(@minus, points, center);
 
 
-dist = sqrt(sum(normPoints.^2,2));
-scaleFactor = sqrt(2)/mean(dist);
+dist = sqrt(sum(normPoints.^2))/size(normPoints, 1);
+scaleFactor = sqrt(2)./dist;
 
 translation = [1 0 0 -center(1); ...
                0 1 0 -center(2); ...
                0 0 1 -center(3); ...
                0 0 0 1];
-scaling     = [scaleFactor 0           0           0; ...
-               0           scaleFactor 0           0; ...
-               0           0           scaleFactor 0; ...
+scaling     = [scaleFactor(1) 0           0           0; ...
+               0           scaleFactor(2) 0           0; ...
+               0           0           scaleFactor(3) 0; ...
                0           0           0           1];
-           
+
 T = (scaling * translation)';
 normPoints = [points ones(size(points,1), 1)] * T;
 normPoints = normPoints(:, 1:end-1);
+
+

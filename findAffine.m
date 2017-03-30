@@ -6,41 +6,43 @@ function AffineT = findAffine (fixPoints, movPoints)
 N = size(movPoints, 1);
 
 if (N<4)
-    error('at least three points are necessary to find the affine transformation');
+    error('at least four points are necessary to find the affine transformation');
 end
+
+
 
 [movPoints, T_mov] = normalizeControlPoints(movPoints);
 [fixPoints, T_fix] = normalizeControlPoints(fixPoints);
 
-% check for devision to zero!
+
+
 if(sum(isnan(movPoints(:)) | movPoints(:)==inf ) ~= 0 || sum(isnan(fixPoints(:)) | fixPoints(:)==inf ) ~= 0)
     AffineT = eye(4);
-    warning('Couldn''t find an affine transformation for the given points;');
+%     warning('Couldn''t find an affine transformation for the given points;');
     return;
 end
 
+% fixPoints = [fixPoints ones(size(fixPoints, 1), 1)];
+% movPoints = [movPoints ones(size(movPoints, 1), 1)];
+% AffineT = [movPoints ones(size(movPoints, 1), 1)]\[fixPoints ones(size(fixPoints, 1), 1)];
 A = zeros(3*N, 12);
 P = zeros(3*N, 1);
 
 for ii = 1:N
-    A(3*ii-2, :) = [movPoints(ii, 1) movPoints(ii, 2) movPoints(ii, 3) 1    0                0                0                0   0                0                0                0];
-    A(3*ii-1, :) = [0               0               0                  0    movPoints(ii, 1) movPoints(ii, 2) movPoints(ii, 3) 1   0                0                0                0];
-    A(3*ii, :)   = [0               0               0                  0    0                0                0                0   movPoints(ii, 1) movPoints(ii, 2) movPoints(ii, 3) 1];
-    P(3*ii-2)    = fixPoints(ii, 1);
-    P(3*ii-1)    = fixPoints(ii, 2);
-    P(3*ii)      = fixPoints(ii, 3);
+    t = 3*ii;
+    A(t-2, :) = [movPoints(ii, 1) movPoints(ii, 2) movPoints(ii, 3) 1    0                0                0                0   0                0                0                0];
+    A(t-1, :) = [0               0               0                  0    movPoints(ii, 1) movPoints(ii, 2) movPoints(ii, 3) 1   0                0                0                0];
+    A(t, :)   = [0               0               0                  0    0                0                0                0   movPoints(ii, 1) movPoints(ii, 2) movPoints(ii, 3) 1];
+    P(t-2)    = fixPoints(ii, 1);
+    P(t-1)    = fixPoints(ii, 2);
+    P(t)      = fixPoints(ii, 3);
 end
 
 [U, D, V] = svd(A);
 h         = V*pinv(D)*U'*P;
-H         = [h(1) h(2)  h(3)  h(4); ...
+AffineT   = [h(1) h(2)  h(3)  h(4); ...
              h(5) h(6)  h(7)  h(8); ...
              h(9) h(10) h(11) h(12); ...
              0    0     0     1];
-% if the points are collinear!
-if(rank(H)<4)
-    AffineT = eye(4);
-    warning('Couldn''t find an affine transformation for the given points;');
-    return;
-end
-AffineT         = (T_fix'\H*T_move')';
+AffineT         = (T_fix'\AffineT*T_mov')';
+% AffineT   = H';
